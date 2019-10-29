@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kmodule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://www.drools.org/xsd/kmodule">
+<!-- specify the package name -->
+    <kbase name="process" packages="com.aib">
+<!--        specify the session name to be the same as the session name in test file-->
+        <ksession name="ksession-rules"/>
+    </kbase>
+</kmodule>

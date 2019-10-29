@@ -1,0 +1,49 @@
+// specify to which package corresponds this rule
+package com.aib
+import com.aib.*;
+rule "discount for new customers" salience -2
+when
+	c:Client(type=="New")
+	o:Order(client==c)
+	a:Article(order==o)
+	p:Product(a.product==p)
+then
+	o.setDiscount(0.1);
+	System.out.println("the discount for a new Customer is "+o.getDiscount());
+	System.out.println(o.getOrderValue());
+end
+
+rule "discount for new customers that buy luxury products" salience 4
+when
+	c:Client(type=="New")
+	o:Order(client==c)
+	a:Article(order==o)
+	p:Product(type=="Medicine", a.product==p)
+then
+	o.setDiscount(0.05);
+	System.out.println("the discount for luxury "+o.getDiscount());
+	System.out.println(o.getOrderValue());
+end
+/*
+rule "discount for medicines sold to new customers"
+when
+	c:Client(type=="New")
+	o:Order(client==c)
+	a:Article(order==o)
+	p:Product(type=="Medicine", a.product==p)
+then
+	o.setDiscount(0.0);
+	System.out.println("The product that has the name "+p.getName()+" has the discount equal to "+p.getDiscount());
+end
+
+rule "discount for new customers which by grocery products"
+when
+	c:Client(type=="New")
+	o:Order(client==c)
+	a:ArticleOfOrder(order==o)
+	p:Product(type=="Grocery", a.product==p)
+then
+	p.setDiscount(0.1);
+	System.out.println("The product that has the name "+p.getName()+" has the discount equal to "+p.getDiscount());
+end
+*/
