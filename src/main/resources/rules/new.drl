@@ -1,5 +1,5 @@
 // specify to which package corresponds this rule
-package com.aib
+package com.aib.example
 import com.aib.*;
 rule "discount for new customers" salience -2
 when

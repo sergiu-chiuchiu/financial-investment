@@ -1,4 +1,4 @@
-package com.aib;
+package com.aib.example;
 
 import lombok.Getter;
 import lombok.Setter;

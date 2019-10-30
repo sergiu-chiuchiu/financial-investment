@@ -1,4 +1,4 @@
-package com.aib;
+package com.aib.example;
 
 public class Product {
 	private String name;
