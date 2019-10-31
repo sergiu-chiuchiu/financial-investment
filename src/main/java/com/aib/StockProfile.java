@@ -1,6 +1,6 @@
 package com.aib;
 
-import com.aib.Enums.BusinessDomain;
+import com.aib.enums.BusinessDomain;
 import lombok.*;
 
 import java.util.Set;

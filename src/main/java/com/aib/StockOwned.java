@@ -14,4 +14,6 @@ public class StockOwned {
     private Integer quantity;
     private Double pricePaid;
 
+
+
 }

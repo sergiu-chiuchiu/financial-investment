@@ -1,12 +1,11 @@
 package com.aib;
 
-import com.aib.Enums.BusinessDomain;
-import com.aib.Enums.TransactionType;
+import com.aib.enums.BusinessDomain;
+import com.aib.enums.TransactionType;
 import org.kie.api.KieServices;
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
 
-import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.Set;
@@ -107,22 +106,25 @@ public class App
 
         AutoTransaction at1 = AutoTransaction.builder()
                 .noOfShares(10000)
+                .thresholdPrice(15.)
                 .stockProfile(spFORD)
-                .waitForTransactionUntil(new GregorianCalendar(2019, 12, 31))
+                .waitUntil(new GregorianCalendar(2019, 9, 28))
                 .transactionType(TransactionType.BUY)
                 .build();
 
         AutoTransaction at2 = AutoTransaction.builder()
                 .noOfShares(2000)
+                .thresholdPrice(23.)
                 .stockProfile(spAMZN)
-                .waitForTransactionUntil(new GregorianCalendar(2019, 12, 31))
+                .waitUntil(new GregorianCalendar(2019, 12, 28))
                 .transactionType(TransactionType.SELL)
                 .build();
 
         AutoTransaction at3 = AutoTransaction.builder()
                 .noOfShares(4000)
+                .thresholdPrice(26.)
                 .stockProfile(spAMZN)
-                .waitForTransactionUntil(new GregorianCalendar(2019, 11, 31))
+                .waitUntil(new GregorianCalendar(2019, 11, 28))
                 .transactionType(TransactionType.BUY)
                 .build();
 
@@ -144,17 +146,21 @@ public class App
 
         Investor i1 = Investor.builder()
                 .name("Bob")
-                .autoBuyOrderSet(atSet1)
+                .autoTransactionSet(atSet1)
+                .availableFunds(3000.)
                 .investmentDomainPreferences(businessDomainPreferencesSet1)
                 .stockOwnedSet(stockOwnedSet1)
                 .build();
 
         Investor i2 = Investor.builder()
                 .name("Sarah")
-                .autoBuyOrderSet(atSet2)
+                .availableFunds(120000.)
+                .autoTransactionSet(atSet2)
                 .investmentDomainPreferences(businessDomainPreferencesSet2)
                 .stockOwnedSet(stockOwnedSet2)
                 .build();
+
+        Investor i3 = Investor.builder().build();
 
         kSession.insert(shr11);
         kSession.insert(shr12);

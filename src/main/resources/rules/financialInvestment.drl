@@ -1,18 +1,32 @@
 package com.aib;
 import com.aib.*
-dialect  "mvel"
+dialect "mvel"
+import java.util.*
+import com.aib.enums.*
 
-rule "financialInvestmentRule1"
+rule "checkAutoTransact" salience 100
     when
-        i:Investor(name == "Sarah")
+        sp:StockProfile()
+    // check if the transaction hasn't expiread
+        at:AutoTransaction(stockProfile == sp
+            && at.getWaitUntil().compareTo(Calendar.getInstance()) >= 0
+            && transactionType == TransactionType.BUY
+            && thresholdPrice >= sp.currentPrice)
+//        check that the transaction actually  belongs to an investor
+//        + check if the investor has enough available funds
+        i:Investor(autoTransactionSet.contains(at) && availableFunds >= (at.noOfShares * sp.currentPrice))
+//        i:Investor(autoTransactionSet != null && !autoTransactionSet.isEmpty)
     then
-    System.out.println("working!");
+        // we execute transaction
+        Investor.executeTransaction(i, at);
+        System.out.println("Transaction for buying stocks for " + i.name + " has been successfully executed");
+
 end
 
 
 
-//
-//
+
+
 //rule "discount for new customers" salience -2
 //when
 //	c:Client(type=="New")

@@ -1,6 +1,6 @@
 package com.aib;
 
-import com.aib.Enums.TransactionType;
+import com.aib.enums.TransactionType;
 import lombok.*;
 
 import java.util.Calendar;
@@ -14,8 +14,10 @@ public class AutoTransaction {
 
     private StockProfile stockProfile;
     private Integer noOfShares;
-    private Calendar waitForTransactionUntil;
+    private Double thresholdPrice;
+    private Calendar waitUntil;
     private TransactionType transactionType;
+    private Boolean isExecuted = false;
 
 
 }

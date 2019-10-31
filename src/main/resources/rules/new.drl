@@ -24,6 +24,7 @@ then
 	System.out.println("the discount for luxury "+o.getDiscount());
 	System.out.println(o.getOrderValue());
 end
+
 /*
 rule "discount for medicines sold to new customers"
 when
