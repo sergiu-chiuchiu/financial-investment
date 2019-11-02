@@ -4,28 +4,105 @@ dialect "mvel"
 import java.util.*
 import com.aib.enums.*
 
-rule "checkAutoTransact" salience 100
+rule "checkTransactionExpired" salience 15
     when
         sp:StockProfile()
-    // check if the transaction hasn't expiread
         at:AutoTransaction(stockProfile == sp
-            && at.getWaitUntil().compareTo(Calendar.getInstance()) >= 0
-            && transactionType == TransactionType.BUY
-            && thresholdPrice >= sp.currentPrice)
-//        check that the transaction actually  belongs to an investor
-//        + check if the investor has enough available funds
-        i:Investor(autoTransactionSet.contains(at) && availableFunds >= (at.noOfShares * sp.currentPrice))
-//        i:Investor(autoTransactionSet != null && !autoTransactionSet.isEmpty)
+    // check if the transaction hasn't expired
+        && at.getWaitUntil().compareTo(Calendar.getInstance()) < 0
+        && transactionState != TransactionState.EXPIRED
+        )
     then
-        // we execute transaction
-        Investor.executeTransaction(i, at);
-        System.out.println("Transaction for buying stocks for " + i.name + " has been successfully executed");
+        at.setTransactionState(TransactionState.EXPIRED);
+        System.out.println("Transaction with id " + at.getId() + " has expired");
+        update(at);
+end
 
+rule "checkTransactionStillValid" salience 13
+    when
+    // check if the transaction hasn't expired
+        sp:StockProfile()
+        at:AutoTransaction(stockProfile == sp
+        && waitUntil.compareTo(Calendar.getInstance()) >= 0)
+    then
+        at.setTransactionState(TransactionState.ON_TERM);
+        System.out.println("Transaction with id " + at.getId() + " is still on term");
+        update(at);
+end
+
+rule "checkAutoTransactBuyThresholdTrue" salience 11
+    when
+        sp:StockProfile()
+        at:AutoTransaction(
+            stockProfile == sp
+            && transactionType == TransactionType.BUY
+            && transactionState == TransactionState.ON_TERM
+            && thresholdPrice >= sp.currentPrice
+            )
+//        check that the transaction actually  belongs to an investor
+        i:Investor(autoTransactionSet.contains(at))
+    then
+        at.setTransactionState(TransactionState.IS_IN_THRESHOLD);
+        System.out.println("Pending transaction " + at.getId() + " for buying stocks for " + i.name + " has the stock price in the required limits");
+        update(at);
+end
+
+rule "checkAutoTransactSellThresholdTrue" salience 9
+    when
+        sp:StockProfile()
+        at:AutoTransaction(stockProfile == sp
+            && transactionType == TransactionType.SELL
+            && transactionState == TransactionState.ON_TERM
+            && thresholdPrice <= sp.currentPrice)
+//        check that the transaction actually  belongs to an investor
+        i:Investor(autoTransactionSet.contains(at))
+    then
+        at.setTransactionState(TransactionState.IS_IN_THRESHOLD);
+        System.out.println("Pending transaction " + at.getId() + " for selling stocks for " + i.name + " has the stock price in the required limits");
+        update(at);
 end
 
 
+rule "checkAutoTransactBuy" salience 5
+    when
+        sp:StockProfile()
+        at:AutoTransaction(stockProfile == sp
+            && transactionType == TransactionType.BUY
+            && transactionState == TransactionState.IS_IN_THRESHOLD)
+//        check that the transaction actually  belongs to an investor
+//        + check if the investor has enough available funds
+        i:Investor(autoTransactionSet.contains(at) && availableFunds >= (at.noOfShares * sp.currentPrice))
+    then
+        // we execute transaction
+        Investor.executeBuyTransaction(i, at);
+        at.setTransactionState(TransactionState.PROCESSED);
+            Double costOfShares = at.getNoOfShares() * at.getStockProfile().getCurrentPrice();
+            i.setAvailableFunds(i.getAvailableFunds() - costOfShares);
+        System.out.println("Transaction for buying stocks for " + i.name + " has been successfully executed");
+        update(i);
+        update(at);
+end
 
+rule "checkAutoTransactSell" salience 7
+    when
+        sp:StockProfile()
+        at:AutoTransaction(stockProfile == sp
+            && transactionType == TransactionType.SELL
+            && transactionState == TransactionState.IS_IN_THRESHOLD)
+//        check that the transaction actually  belongs to an investor
+        i:Investor(autoTransactionSet.contains(at))
+    then
+        // we execute transaction
+        Investor.executeSellTransaction(i, at);
+        at.setTransactionState(TransactionState.PROCESSED);
+            Double valueOfShares = at.getNoOfShares() * at.getStockProfile().getCurrentPrice();
+            i.setAvailableFunds(i.getAvailableFunds() + valueOfShares);
+        System.out.println("Transaction for selling stocks for " + i.name + " has been successfully executed");
+        update(i);
+        update(at);
+end
 
+// TBC: rule for no funds, rule for no shares, reset state to pending after processing transactions
 
 //rule "discount for new customers" salience -2
 //when

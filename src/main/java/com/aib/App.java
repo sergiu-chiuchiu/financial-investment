@@ -6,6 +6,7 @@ import org.kie.api.KieServices;
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
 
+import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.Set;
@@ -18,8 +19,6 @@ public class App
 {
     public static void main( String[] args )
     {
-        System.out.println( "Hello World!" );
-
         KieServices kService=KieServices.Factory.get();
         KieContainer kContainer=kService.getKieClasspathContainer();
         KieSession kSession=kContainer.newKieSession("ksession-rules");
@@ -29,7 +28,7 @@ public class App
                 .openPrice(11.75)
                 .maxPrice(13.5)
                 .minPrice(11.0)
-                .recordDate(new GregorianCalendar(2019, 10, 1))
+                .recordDate(new GregorianCalendar(2019, Calendar.NOVEMBER, 1))
                 .build();
 
         StockHistoryRecord shr12 = StockHistoryRecord.builder()
@@ -37,7 +36,7 @@ public class App
                 .openPrice(12.75)
                 .maxPrice(14.5)
                 .minPrice(12.0)
-                .recordDate(new GregorianCalendar(2019, 10, 2))
+                .recordDate(new GregorianCalendar(2019, Calendar.NOVEMBER, 2))
                 .build();
 
         StockHistoryRecord shr21 = StockHistoryRecord.builder()
@@ -45,7 +44,7 @@ public class App
                 .openPrice(22.75)
                 .maxPrice(24.5)
                 .minPrice(22.0)
-                .recordDate(new GregorianCalendar(2019, 10, 1))
+                .recordDate(new GregorianCalendar(2019, Calendar.NOVEMBER, 1))
                 .build();
 
         StockHistoryRecord shr22 = StockHistoryRecord.builder()
@@ -53,7 +52,7 @@ public class App
                 .openPrice(23.75)
                 .maxPrice(26.5)
                 .minPrice(21.0)
-                .recordDate(new GregorianCalendar(2019, 10, 2))
+                .recordDate(new GregorianCalendar(2019, Calendar.NOVEMBER, 2))
                 .build();
 
         Set<StockHistoryRecord> stockHistoryRecordSet1 = new HashSet<>();
@@ -105,26 +104,29 @@ public class App
 
 
         AutoTransaction at1 = AutoTransaction.builder()
+                .id(110L)
                 .noOfShares(10000)
                 .thresholdPrice(15.)
                 .stockProfile(spFORD)
-                .waitUntil(new GregorianCalendar(2019, 9, 28))
+                .waitUntil(new GregorianCalendar(2019, Calendar.SEPTEMBER, 28))
                 .transactionType(TransactionType.BUY)
                 .build();
 
         AutoTransaction at2 = AutoTransaction.builder()
+                .id(111L)
                 .noOfShares(2000)
                 .thresholdPrice(23.)
                 .stockProfile(spAMZN)
-                .waitUntil(new GregorianCalendar(2019, 12, 28))
+                .waitUntil(new GregorianCalendar(2019, Calendar.DECEMBER, 28))
                 .transactionType(TransactionType.SELL)
                 .build();
 
         AutoTransaction at3 = AutoTransaction.builder()
+                .id(112L)
                 .noOfShares(4000)
                 .thresholdPrice(26.)
                 .stockProfile(spAMZN)
-                .waitUntil(new GregorianCalendar(2019, 11, 28))
+                .waitUntil(new GregorianCalendar(2019, Calendar.NOVEMBER, 28))
                 .transactionType(TransactionType.BUY)
                 .build();
 
@@ -159,8 +161,6 @@ public class App
                 .investmentDomainPreferences(businessDomainPreferencesSet2)
                 .stockOwnedSet(stockOwnedSet2)
                 .build();
-
-        Investor i3 = Investor.builder().build();
 
         kSession.insert(shr11);
         kSession.insert(shr12);
