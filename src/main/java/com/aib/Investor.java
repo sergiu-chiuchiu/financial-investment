@@ -50,7 +50,4 @@ public class Investor {
             throw new Exception();
         }
     }
-
-
-
 }

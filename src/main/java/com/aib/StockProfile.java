@@ -11,8 +11,5 @@ public class StockProfile {
     private BusinessDomain domainOfActivity;
     private Double currentOpenPrice;
     private Double currentPrice;
-
     private Set<StockHistoryRecord> stockHistoryRecordSet;
-
-
 }

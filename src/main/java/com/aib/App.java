@@ -102,7 +102,6 @@ public class App
         Set<StockOwned> stockOwnedSet2 = new HashSet<>();
         stockOwnedSet2.add(so3);
 
-
         AutoTransaction at1 = AutoTransaction.builder()
                 .id(110L)
                 .noOfShares(10000)
@@ -144,7 +143,6 @@ public class App
         Set<BusinessDomain> businessDomainPreferencesSet2 = new HashSet<>();
         businessDomainPreferencesSet2.add(BusinessDomain.TECH);
         businessDomainPreferencesSet2.add(BusinessDomain.AUTOMOTIVE);
-
 
         Investor i1 = Investor.builder()
                 .name("Bob")

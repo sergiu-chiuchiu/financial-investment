@@ -20,5 +20,4 @@ public class AutoTransaction {
     private TransactionType transactionType;
     @Builder.Default
     private TransactionState transactionState = TransactionState.PENDING;
-
 }

@@ -4,6 +4,8 @@ dialect "mvel"
 import java.util.*
 import com.aib.enums.*
 
+//--- Rule 1 ------------------------------------------------------------------------------------------------------------
+
 rule "checkTransactionExpired" salience 15
     when
         sp:StockProfile()
@@ -18,6 +20,8 @@ rule "checkTransactionExpired" salience 15
         update(at);
 end
 
+//--- Rule 2 ------------------------------------------------------------------------------------------------------------
+
 rule "checkTransactionStillValid" salience 13
     when
     // check if the transaction hasn't expired
@@ -29,6 +33,8 @@ rule "checkTransactionStillValid" salience 13
         System.out.println("Transaction with id " + at.getId() + " is still on term");
         update(at);
 end
+
+//--- Rule 3 ------------------------------------------------------------------------------------------------------------
 
 rule "checkAutoTransactBuyThresholdTrue" salience 11
     when
@@ -47,6 +53,8 @@ rule "checkAutoTransactBuyThresholdTrue" salience 11
         update(at);
 end
 
+//--- Rule 4 ------------------------------------------------------------------------------------------------------------
+
 rule "checkAutoTransactSellThresholdTrue" salience 9
     when
         sp:StockProfile()
@@ -62,6 +70,7 @@ rule "checkAutoTransactSellThresholdTrue" salience 9
         update(at);
 end
 
+//--- Rule 5 ------------------------------------------------------------------------------------------------------------
 
 rule "checkAutoTransactBuy" salience 5
     when
@@ -83,6 +92,8 @@ rule "checkAutoTransactBuy" salience 5
         update(at);
 end
 
+//--- Rule 6 ------------------------------------------------------------------------------------------------------------
+
 rule "checkAutoTransactSell" salience 7
     when
         sp:StockProfile()
@@ -101,6 +112,99 @@ rule "checkAutoTransactSell" salience 7
         update(i);
         update(at);
 end
+
+//--- Rule 7 ------------------------------------------------------------------------------------------------------------
+
+rule "highest/lowest available founds"
+    when
+        Investor($lowestFunds : availableFunds, $name1 : name)
+        not Investor(availableFunds < $lowestFunds)
+
+        Investor($highestFunds : availableFunds, $name2: name)
+        not Investor(availableFunds > $highestFunds)
+    then
+        System.out.println( $name1 + " is the investor with the least available founds, " + $lowestFunds );
+        System.out.println( $name2 + " is the investor with the most available founds, " + $highestFunds);
+    end
+
+//--- Rule 8 ------------------------------------------------------------------------------------------------------------
+
+rule "investors with favorite business domain 'AUTOMOTIVE'"
+    when
+        inv: Investor(isValid(inv))
+    then
+        System.out.println(inv.name + " has as a favorite domain of business 'AUTOMOTIVE' ");
+    end
+
+function Boolean isValid(Investor inv){
+    Boolean found=false;
+    for(BusinessDomain dom:inv.getInvestmentDomainPreferences()){
+        if(dom.name()=="AUTOMOTIVE")
+        found=true;
+    }
+    return found;
+}
+
+//--- Rule 9 ------------------------------------------------------------------------------------------------------------
+
+rule "get history records for each investor that have minPrice >=10, maxPrice <=25"
+    when
+        stockProfile: StockProfile(isValid3(stockProfile))
+    then
+    end
+
+function Boolean isValid3(StockProfile stockProfile){
+    BusinessDomain domain = BusinessDomain.TECH;
+    Boolean found=false;
+    List<StockHistoryRecord> list = new ArrayList<StockHistoryRecord>();
+    for(StockHistoryRecord st:stockProfile.getStockHistoryRecordSet()){
+        if(st.getMinPrice() >= 10 && st.getMaxPrice() <=25){
+                list.add(st);
+                found = true;
+                }
+    }
+    System.out.println("Result records for " + stockProfile.getName() + ": " + list.size());
+    for(StockHistoryRecord st: list){
+        System.out.println(stockProfile.getName() + " " +  domain + " " + st.getMinPrice() + " " + st.getMaxPrice());
+    }
+    return found;
+}
+
+//--- Rule 10------------------------------------------------------------------------------------------------------------
+
+//--- Rule 11------------------------------------------------------------------------------------------------------------
+
+//--- Rule 12------------------------------------------------------------------------------------------------------------
+
+//--- Rule 13------------------------------------------------------------------------------------------------------------
+
+//--- Rule 14------------------------------------------------------------------------------------------------------------
+
+//--- Rule 15------------------------------------------------------------------------------------------------------------
+
+//--- Rule 16------------------------------------------------------------------------------------------------------------
+
+//--- Rule 17------------------------------------------------------------------------------------------------------------
+
+//--- Rule 18 ------------------------------------------------------------------------------------------------------------
+
+//--- Rule 19 ------------------------------------------------------------------------------------------------------------
+
+//--- Rule 20 ------------------------------------------------------------------------------------------------------------
+
+//--- Rule 21 ------------------------------------------------------------------------------------------------------------
+
+//--- Rule 22 ------------------------------------------------------------------------------------------------------------
+
+//--- Rule 23 ------------------------------------------------------------------------------------------------------------
+
+//--- Rule 24 ------------------------------------------------------------------------------------------------------------
+
+//--- Rule 25 ------------------------------------------------------------------------------------------------------------
+
+
+
+
 
 // TBC: rule for no funds, rule for no shares, reset state to pending after processing transactions
 
