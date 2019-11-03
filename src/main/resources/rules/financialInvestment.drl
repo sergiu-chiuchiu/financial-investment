@@ -3,6 +3,7 @@ import com.aib.*
 dialect "mvel"
 import java.util.*
 import com.aib.enums.*
+import java.util.Date
 
 //--- Rule 1 ------------------------------------------------------------------------------------------------------------
 
@@ -115,7 +116,7 @@ end
 
 //--- Rule 7 ------------------------------------------------------------------------------------------------------------
 
-rule "highest/lowest available founds"
+rule "highest/lowest available founds" salience 18
     when
         Investor($lowestFunds : availableFunds, $name1 : name)
         not Investor(availableFunds < $lowestFunds)
@@ -129,31 +130,31 @@ rule "highest/lowest available founds"
 
 //--- Rule 8 ------------------------------------------------------------------------------------------------------------
 
-rule "investors with favorite business domain 'AUTOMOTIVE'"
+rule "investors with favorite business domain 'AUTOMOTIVE'" salience 19
     when
-        inv: Investor(isValid(inv))
+        inv: Investor(checkDoamin(inv))
     then
         System.out.println(inv.name + " has as a favorite domain of business 'AUTOMOTIVE' ");
     end
 
-function Boolean isValid(Investor inv){
+function Boolean checkDoamin(Investor inv){
     Boolean found=false;
     for(BusinessDomain dom:inv.getInvestmentDomainPreferences()){
         if(dom.name()=="AUTOMOTIVE")
-        found=true;
+            found=true;
     }
     return found;
 }
 
 //--- Rule 9 ------------------------------------------------------------------------------------------------------------
 
-rule "get history records for each investor that have minPrice >=10, maxPrice <=25"
+rule "get history records for each stock profile that have minPrice >=10, maxPrice <=25" salience 20
     when
-        stockProfile: StockProfile(isValid3(stockProfile))
+        stockProfile: StockProfile(checkMinMaxPrice(stockProfile))
     then
     end
 
-function Boolean isValid3(StockProfile stockProfile){
+function Boolean checkMinMaxPrice(StockProfile stockProfile){
     BusinessDomain domain = BusinessDomain.TECH;
     Boolean found=false;
     List<StockHistoryRecord> list = new ArrayList<StockHistoryRecord>();
@@ -170,21 +171,79 @@ function Boolean isValid3(StockProfile stockProfile){
     return found;
 }
 
-//--- Rule 10------------------------------------------------------------------------------------------------------------
+//--- Rule 10 ------------------------------------------------------------------------------------------------------------
 
-//--- Rule 11------------------------------------------------------------------------------------------------------------
+rule "total value of transactions" salience 21
+    when
+        total: Double()
+            from accumulate(StockOwned( $price : pricePaid, $quantity: quantity),
+                            init(Double tottal = 0;),
+                            action(tottal += $price * $quantity;),
+                            reverse(tottal -= $price * $quantity;),
+                            result(new Double(tottal)))
+    then
+        System.out.println("Total value of transactions: " + total);
+    end
 
-//--- Rule 12------------------------------------------------------------------------------------------------------------
+//--- Rule 11 ------------------------------------------------------------------------------------------------------------
 
-//--- Rule 13------------------------------------------------------------------------------------------------------------
+rule "cancel all pending transactions from october 2019" salience 22
+    when
+        sp:StockProfile()
+        at:AutoTransaction(stockProfile == sp
+            && (transactionType == TransactionType.SELL || transactionType == TransactionType.BUY)
+            && transactionState == TransactionState.PENDING
+            && checkYearAndMonth(at))
+        i:Investor(autoTransactionSet.contains(at))
+    then
+        at.setTransactionState(TransactionState.CANCEL);
+        System.out.println("Transaction " + at.getId() + " for " + at.getTransactionType() + " stocks for " + i.name + " has been cancelled");
+        update(i);
+        update(at);
+    end
 
-//--- Rule 14------------------------------------------------------------------------------------------------------------
+function boolean checkYearAndMonth(AutoTransaction at){
+    int year = at.getWaitUntil().get(Calendar.YEAR);
+    int month = at.getWaitUntil().get(Calendar.MONTH);  //zero based
+    if(year == 2019 && month == 9)
+    {
+        return true;
+    }
+    return false;
+}
 
-//--- Rule 15------------------------------------------------------------------------------------------------------------
+//--- Rule 12 ------------------------------------------------------------------------------------------------------------
 
-//--- Rule 16------------------------------------------------------------------------------------------------------------
+rule "delete all sell expired transactions with year < 2019" salience 23
+    when
+        sp:StockProfile()
+        at:AutoTransaction(stockProfile == sp
+            && (transactionType == TransactionType.SELL)
+            && transactionState == TransactionState.EXPIRED
+            && checkYearAndMonth1(at))
+    then
+        delete(at);
+        System.out.println("Transaction " + at.getId() + " has been deleted");
+    end
 
-//--- Rule 17------------------------------------------------------------------------------------------------------------
+function boolean checkYearAndMonth1(AutoTransaction at){
+    int year = at.getWaitUntil().get(Calendar.YEAR);
+    if(year < 2019)
+    {
+        return true;
+    }
+    return false;
+}
+
+//--- Rule 13 ------------------------------------------------------------------------------------------------------------
+
+//--- Rule 14 ------------------------------------------------------------------------------------------------------------
+
+//--- Rule 15 ------------------------------------------------------------------------------------------------------------
+
+//--- Rule 16 ------------------------------------------------------------------------------------------------------------
+
+//--- Rule 17 ------------------------------------------------------------------------------------------------------------
 
 //--- Rule 18 ------------------------------------------------------------------------------------------------------------
 

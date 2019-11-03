@@ -129,12 +129,52 @@ public class App
                 .transactionType(TransactionType.BUY)
                 .build();
 
+        AutoTransaction at4 = AutoTransaction.builder()
+                .id(113L)
+                .noOfShares(3000)
+                .thresholdPrice(21.)
+                .stockProfile(spAMZN)
+                .waitUntil(new GregorianCalendar(2019, Calendar.OCTOBER, 25))
+                .transactionType(TransactionType.SELL)
+                .build();
+
+        AutoTransaction at5 = AutoTransaction.builder()
+                .id(114L)
+                .noOfShares(3000)
+                .thresholdPrice(21.)
+                .stockProfile(spAMZN)
+                .waitUntil(new GregorianCalendar(2019, Calendar.OCTOBER, 25))
+                .transactionType(TransactionType.BUY)
+                .build();
+
+        AutoTransaction at6 = AutoTransaction.builder()
+                .id(115L)
+                .noOfShares(6000)
+                .thresholdPrice(18.)
+                .stockProfile(spFORD)
+                .waitUntil(new GregorianCalendar(2018, Calendar.OCTOBER, 25))
+                .transactionType(TransactionType.SELL)
+                .build();
+
+        AutoTransaction at7 = AutoTransaction.builder()
+                .id(116L)
+                .noOfShares(3000)
+                .thresholdPrice(15.)
+                .stockProfile(spAMZN)
+                .waitUntil(new GregorianCalendar(2017, Calendar.OCTOBER, 25))
+                .transactionType(TransactionType.SELL)
+                .build();
+
         Set<AutoTransaction> atSet1 = new HashSet<>();
         atSet1.add(at1);
         atSet1.add(at2);
+        atSet1.add(at5);
+        atSet1.add(at6);
 
         Set<AutoTransaction> atSet2 = new HashSet<>();
         atSet2.add(at3);
+        atSet2.add(at4);
+        atSet2.add(at7);
 
         Set<BusinessDomain> businessDomainPreferencesSet1 = new HashSet<>();
         businessDomainPreferencesSet1.add(BusinessDomain.AEROSPACE);
@@ -175,6 +215,10 @@ public class App
         kSession.insert(at1);
         kSession.insert(at2);
         kSession.insert(at3);
+        kSession.insert(at4);
+        kSession.insert(at5);
+        kSession.insert(at6);
+        kSession.insert(at7);
 
         kSession.insert(i1);
         kSession.insert(i2);
