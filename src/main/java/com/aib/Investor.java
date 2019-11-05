@@ -1,8 +1,11 @@
 package com.aib;
 
 import com.aib.enums.BusinessDomain;
+import com.aib.enums.TransactionState;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -17,7 +20,12 @@ public class Investor {
     private Set<BusinessDomain> investmentDomainPreferences;
     private Set<StockOwned> stockOwnedSet;
     private Set<AutoTransaction> autoTransactionSet;
-    private String notification;
+    @Builder.Default
+    private List<String> notification = new ArrayList<>();
+
+    public void addNotification(String newNotification) {
+        notification.add(newNotification);
+    }
 
     public static void executeBuyTransaction(Investor i, AutoTransaction at) {
         i.getStockOwnedSet().add(StockOwned.builder()
@@ -47,7 +55,8 @@ public class Investor {
             }
         }
         if (!isStockSold) {
-            throw new Exception();
+            System.out.println("Stock could not be sold. Not enough shares!");
+            at.setTransactionState(TransactionState.NOT_ENOUGH_SHARES);
         }
     }
 }

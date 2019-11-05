@@ -114,6 +114,74 @@ rule "checkAutoTransactSell" salience 7
         update(at);
 end
 
+// TBC: rule for no funds, rule for no shares, reset state to pending after processing transactions
+
+rule "checkTransactionsWithNotEnoughFunds" salience 8
+    when
+        sp:StockProfile()
+        at:AutoTransaction(stockProfile == sp
+            && transactionType == TransactionType.BUY
+            && transactionState == TransactionState.IS_IN_THRESHOLD)
+        i:Investor(autoTransactionSet.contains(at)
+        && (availableFunds < (at.noOfShares * sp.currentPrice)))
+    then
+        at.setTransactionState(TransactionState.NOT_ENOUGH_FUNDS);
+        i.addNotification("Not enough funds for executing transaction " + at.getId() + " Please");
+        System.out.println("Transaction " + at.getId() + " for buying stocks requires " + (at.noOfShares * sp.currentPrice));
+        update(i);
+        update(at);
+    end
+
+rule "checkTransactionsWithNotEnoughShares" salience 8
+    when
+        sp:StockProfile()
+        at:AutoTransaction(stockProfile == sp
+            && transactionType == TransactionType.SELL
+            && transactionState == TransactionState.IS_IN_THRESHOLD)
+        totalShares: Double()
+                    from accumulate(StockOwned(stockProfile.name == at.stockProfile.name, $quantity : quantity),
+                                    init(Double shareSum = 0;),
+                                    action(shareSum += $quantity;),
+                                    reverse(shareSum -= $quantity;),
+                                    result(new Double(shareSum)))
+        i:Investor(autoTransactionSet.contains(at)
+        && at.noOfShares > totalShares)
+    then
+        i.addNotification("Not enough shares for executing transaction " + at.getId() + " Please");
+        at.setTransactionState(TransactionState.NOT_ENOUGH_SHARES);
+        System.out.println("Not enough shares! Transaction " + at.getId() + " for selling stocks requires " + at.noOfShares + " shares and you only have " + totalShares);
+        update(at);
+        update(i);
+    end
+
+rule "applyComissionForPlacingTransactionBelow50k" salience 101
+    when
+        at:AutoTransaction((noOfShares * thresholdPrice) < 50000)
+        i:Investor(autoTransactionSet.contains(at))
+    then
+        i.setAvailableFunds(i.getAvailableFunds - (at.noOfShares * at.thresholdPrice * 0.001));
+        System.out.println("Comission for transaction values lower than 50k applied totalling " + (at.noOfShares * at.thresholdPrice * 0.001));
+    end
+
+rule "applyComissionForPlacingTransactionBetween50kAnd100k" salience 101
+    when
+        at:AutoTransaction($transactionValue : (noOfShares * thresholdPrice), $transactionValue >= 50000
+        && $transactionValue < 100000)
+        i:Investor(autoTransactionSet.contains(at))
+    then
+        i.setAvailableFunds(i.getAvailableFunds - (at.noOfShares * at.thresholdPrice * 0.0005));
+        System.out.println("Comission for values between 50k and 100k applied totalling " + (at.noOfShares * at.thresholdPrice * 0.0005));
+    end
+
+rule "applyComissionForPlacingTransactionHigherThan100k" salience 101
+    when
+        at:AutoTransaction($transactionValue : (noOfShares * thresholdPrice), $transactionValue >= 100000)
+        i:Investor(autoTransactionSet.contains(at))
+    then
+        i.setAvailableFunds(i.getAvailableFunds - (at.noOfShares * at.thresholdPrice * 0.0002));
+        System.out.println("Comission for trnasaction value higher than 100k applied totalling " + (at.noOfShares * at.thresholdPrice * 0.0002));
+    end
+
 //--- Rule 7 ------------------------------------------------------------------------------------------------------------
 
 rule "highest/lowest available founds" salience 18
@@ -265,7 +333,6 @@ function boolean checkYearAndMonth1(AutoTransaction at){
 
 
 
-// TBC: rule for no funds, rule for no shares, reset state to pending after processing transactions
 
 //rule "discount for new customers" salience -2
 //when
