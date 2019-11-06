@@ -4,6 +4,11 @@ dialect "mvel"
 import java.util.*
 import com.aib.enums.*
 import java.util.Date
+import java.sql.Time
+import java.time.Period
+import java.time.Duration
+import java.util.concurrent.TimeUnit
+import java.time.LocalDate
 
 //--- Rule 1 ------------------------------------------------------------------------------------------------------------
 
@@ -220,13 +225,13 @@ rule "delete all sell expired transactions with year < 2019" salience 23
         at:AutoTransaction(stockProfile == sp
             && (transactionType == TransactionType.SELL)
             && transactionState == TransactionState.EXPIRED
-            && checkYearAndMonth1(at))
+            && checkYear(at))
     then
         delete(at);
         System.out.println("Transaction " + at.getId() + " has been deleted");
     end
 
-function boolean checkYearAndMonth1(AutoTransaction at){
+function boolean checkYear(AutoTransaction at){
     int year = at.getWaitUntil().get(Calendar.YEAR);
     if(year < 2019)
     {
@@ -237,15 +242,102 @@ function boolean checkYearAndMonth1(AutoTransaction at){
 
 //--- Rule 13 ------------------------------------------------------------------------------------------------------------
 
+rule "set type of investor Golden that have over 130000 total stock value and available funds over 100000" salience 25
+    when
+        inv: Investor(investorType != InvestorType.BLOCKED && availableFunds > 100000)
+        total: Double(total >130000)
+             from accumulate(StockOwned( $price : pricePaid, $quantity: quantity, investorID == inv.getInvestorID()),
+                                    sum($price * $quantity))
+    then
+        inv.setInvestorType(InvestorType.GOLDEN);
+        System.out.println("Investor " + inv.getName() + " has become " + inv.getInvestorType());
+    end
+
 //--- Rule 14 ------------------------------------------------------------------------------------------------------------
+
+rule "offer a bonus of 50000 funds at midnight to the investor that has the highest value of available funds from that day" salience -1
+    when
+        Investor($highestFunds : availableFunds, $name2: name)
+                not Investor(availableFunds > $highestFunds)
+        inv: Investor(availableFunds == $highestFunds, getTime())
+    then
+        inv.setAvailableFunds(inv.getAvailableFunds() + 50000);
+        System.out.println("Investor " + inv.getName() + " won  50000 funds");
+    end
+
+function Boolean getTime()
+{
+        int hour = Calendar.getInstance().get(Calendar.HOUR);
+        int minute = Calendar.getInstance().get(Calendar.MINUTE);
+        int second = Calendar.getInstance().get(Calendar.SECOND);
+
+        if(hour == 0 && minute == 0 && second == 0){
+            return true;
+        }
+        return false;
+}
 
 //--- Rule 15 ------------------------------------------------------------------------------------------------------------
 
+rule "block all investors with age under 18" salience 22
+    when
+        inv: Investor(!getAge(inv))
+        total: Double()
+                     from accumulate(StockOwned( $price : pricePaid, $quantity: quantity, investorID == inv.getInvestorID()),
+                                            sum($price * $quantity))
+    then
+        inv.setInvestorType(InvestorType.BLOCKED);
+        System.out.println("Investor " + inv.getName() + " is " + inv.getInvestorType());
+    end
+
+function Boolean getAge(Investor inv)
+{
+        Period diff = Period.between(LocalDate.now(), inv.getBirthDate());
+        if(Math.abs(diff.getYears()) >=18){
+            return true;
+        }
+        return false;
+}
+
 //--- Rule 16 ------------------------------------------------------------------------------------------------------------
+
+rule "set type of investor SILVER that have over 100000 and less than 130000 total stock value and available funds over 80000" salience 25
+    when
+        inv: Investor(investorType != InvestorType.BLOCKED && availableFunds > 80000)
+        total: Double(total >= 100000 && total <= 130000)
+             from accumulate(StockOwned( $price : pricePaid, $quantity: quantity, investorID == inv.getInvestorID()),
+                                    sum($price * $quantity))
+    then
+        inv.setInvestorType(InvestorType.SILVER);
+        System.out.println("Investor " + inv.getName() + " has become " + inv.getInvestorType());
+    end
 
 //--- Rule 17 ------------------------------------------------------------------------------------------------------------
 
+rule "average of min and max price of the stock history record" salience 21
+    when
+        avg: Double()
+            from accumulate(StockHistoryRecord( $minPrice : minPrice, $maxPrice: maxPrice),
+                            init(Double average = 0;),
+                            action(average += ($minPrice * $maxPrice)/2;),
+                            reverse(average -= ($minPrice * $maxPrice)/2;),
+                            result(new Double(average)))
+    then
+        System.out.println("Average of min and max prices: " + avg);
+    end
+
 //--- Rule 18 ------------------------------------------------------------------------------------------------------------
+
+rule "set type of investor Golden that have over 70000 and less than 100000 total stock value and available funds over 50000" salience 25
+    when
+        inv: Investor(investorType != InvestorType.BLOCKED && availableFunds > 50000)
+        total: Double(total >= 70000 && total < 100000)
+             from accumulate(StockOwned( $price : pricePaid, $quantity: quantity, investorID == inv.getInvestorID()),
+                                    sum($price * $quantity))
+    then
+        inv.setInvestorType(InvestorType.BRONZE);
+        System.out.println("Investor " + inv.getName() + " has become " + inv.getInvestorType());
+    end
 
 //--- Rule 19 ------------------------------------------------------------------------------------------------------------
 
@@ -261,55 +353,3 @@ function boolean checkYearAndMonth1(AutoTransaction at){
 
 //--- Rule 25 ------------------------------------------------------------------------------------------------------------
 
-
-
-
-
-// TBC: rule for no funds, rule for no shares, reset state to pending after processing transactions
-
-//rule "discount for new customers" salience -2
-//when
-//	c:Client(type=="New")
-//	o:Order(client==c)
-//	a:Article(order==o)
-//	p:Product(a.product==p)
-//then
-//	o.setDiscount(0.1);
-//	System.out.println("the discount for a new Customer is "+o.getDiscount());
-//	System.out.println(o.getOrderValue());
-//end
-//
-//rule "discount for new customers that buy luxury products" salience 4
-//when
-//	c:Client(type=="New")
-//	o:Order(client==c)
-//	a:Article(order==o)
-//	p:Product(type=="Medicine", a.product==p)
-//then
-//	o.setDiscount(0.05);
-//	System.out.println("the discount for luxury "+o.getDiscount());
-//	System.out.println(o.getOrderValue());
-//end
-//
-//
-//rule "discount for medicines sold to new customers"
-//when
-//	c:Client(type=="New")
-//	o:Order(client==c)
-//	a:Article(order==o)
-//	p:Product(type=="Medicine", a.product==p)
-//then
-//	o.setDiscount(0.0);
-//	System.out.println("The product that has the name "+p.getName()+" has the discount equal to "+p.getDiscount());
-//end
-//
-//rule "discount for new customers which by grocery products"
-//when
-//	c:Client(type=="New")
-//	o:Order(client==c)
-//	a:ArticleOfOrder(order==o)
-//	p:Product(type=="Grocery", a.product==p)
-//then
-//	p.setDiscount(0.1);
-//	System.out.println("The product that has the name "+p.getName()+" has the discount equal to "+p.getDiscount());
-//end

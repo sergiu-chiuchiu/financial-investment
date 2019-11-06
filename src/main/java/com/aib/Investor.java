@@ -1,8 +1,13 @@
 package com.aib;
 
 import com.aib.enums.BusinessDomain;
+import com.aib.enums.InvestorType;
 import lombok.*;
 
+import java.time.LocalDate;
+import java.time.Period;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Set;
 
 @Getter
@@ -12,12 +17,15 @@ import java.util.Set;
 @Builder
 public class Investor {
 
+    private Integer investorID;
+    private LocalDate birthDate;
     private String name;
     private Double availableFunds;
     private Set<BusinessDomain> investmentDomainPreferences;
     private Set<StockOwned> stockOwnedSet;
     private Set<AutoTransaction> autoTransactionSet;
     private String notification;
+    private InvestorType investorType = InvestorType.STARTER;
 
     public static void executeBuyTransaction(Investor i, AutoTransaction at) {
         i.getStockOwnedSet().add(StockOwned.builder()
@@ -25,6 +33,46 @@ public class Investor {
                 .pricePaid(at.getStockProfile().getCurrentPrice())
                 .stockProfile(at.getStockProfile())
                 .build());
+    }
+
+    public Investor setInvestorType(Double value) {
+        if(value >= 130000){
+            this.investorType = InvestorType.GOLDEN;
+        }else
+        if(value < 130000 && value >= 110000){
+            this.investorType = InvestorType.SILVER;
+        }else
+        if(value < 110000 && value > 90000){
+            this.investorType = InvestorType.BRONZE;
+        }else{
+            this.investorType = InvestorType.STARTER;
+        }
+        return this;
+    }
+
+    public Investor setInvestorType(InvestorType type) {
+        this.investorType = type;
+        return this;
+    }
+
+    public Investor setInvestorType(Boolean val, Double value) {
+        Period diff = Period.between(LocalDate.now(), this.getBirthDate());
+        if(val){
+            if(value >= 130000){
+                this.investorType = InvestorType.GOLDEN;
+            }else
+            if(value < 130000 && value >= 110000){
+                this.investorType = InvestorType.SILVER;
+            }else
+            if(value < 110000 && value > 90000){
+                this.investorType = InvestorType.BRONZE;
+            }else{
+                this.investorType = InvestorType.STARTER;
+            }
+        }else{
+            this.investorType = InvestorType.BLOCKED;
+        }
+        return this;
     }
 
     public static void executeSellTransaction(Investor i, AutoTransaction at) throws Exception {

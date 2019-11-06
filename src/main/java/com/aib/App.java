@@ -6,10 +6,9 @@ import org.kie.api.KieServices;
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
 
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.HashSet;
-import java.util.Set;
+import java.time.LocalDate;
+import java.time.Month;
+import java.util.*;
 
 /**
  * Hello world!
@@ -79,18 +78,21 @@ public class App
                 .build();
 
         StockOwned so1 = StockOwned.builder()
+                .investorID(1)
                 .stockProfile(spFORD)
                 .pricePaid(10.45)
                 .quantity(5000)
                 .build();
 
         StockOwned so2 = StockOwned.builder()
+                .investorID(1)
                 .stockProfile(spAMZN)
                 .pricePaid(20.55)
                 .quantity(3000)
                 .build();
 
         StockOwned so3 = StockOwned.builder()
+                .investorID(2)
                 .stockProfile(spAMZN)
                 .pricePaid(19.18)
                 .quantity(7000)
@@ -185,6 +187,8 @@ public class App
         businessDomainPreferencesSet2.add(BusinessDomain.AUTOMOTIVE);
 
         Investor i1 = Investor.builder()
+                .investorID(1)
+                .birthDate(LocalDate.of(1999, Month.MARCH, 19))
                 .name("Bob")
                 .autoTransactionSet(atSet1)
                 .availableFunds(3000.)
@@ -193,6 +197,8 @@ public class App
                 .build();
 
         Investor i2 = Investor.builder()
+                .birthDate(LocalDate.of(2002, Month.MARCH, 19))
+                .investorID(2)
                 .name("Sarah")
                 .availableFunds(120000.)
                 .autoTransactionSet(atSet2)
