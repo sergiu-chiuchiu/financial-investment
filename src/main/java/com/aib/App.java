@@ -122,12 +122,30 @@ public class App
                 .transactionType(TransactionType.SELL)
                 .build();
 
+        AutoTransaction at21 = AutoTransaction.builder()
+                .id(1121L)
+                .noOfShares(22000)
+                .thresholdPrice(22.)
+                .stockProfile(spAMZN)
+                .waitUntil(new GregorianCalendar(2019, Calendar.DECEMBER, 14))
+                .transactionType(TransactionType.SELL)
+                .build();
+
         AutoTransaction at3 = AutoTransaction.builder()
                 .id(112L)
                 .noOfShares(4000)
                 .thresholdPrice(26.)
                 .stockProfile(spAMZN)
                 .waitUntil(new GregorianCalendar(2019, Calendar.NOVEMBER, 28))
+                .transactionType(TransactionType.BUY)
+                .build();
+
+        AutoTransaction at31 = AutoTransaction.builder()
+                .id(1131L)
+                .noOfShares(17000)
+                .thresholdPrice(27.)
+                .stockProfile(spAMZN)
+                .waitUntil(new GregorianCalendar(2019, Calendar.NOVEMBER, 24))
                 .transactionType(TransactionType.BUY)
                 .build();
 
@@ -172,11 +190,13 @@ public class App
         atSet1.add(at2);
         atSet1.add(at5);
         atSet1.add(at6);
+        atSet1.add(at21);
 
         Set<AutoTransaction> atSet2 = new HashSet<>();
         atSet2.add(at3);
         atSet2.add(at4);
         atSet2.add(at7);
+        atSet2.add(at31);
 
         Set<BusinessDomain> businessDomainPreferencesSet1 = new HashSet<>();
         businessDomainPreferencesSet1.add(BusinessDomain.AEROSPACE);
@@ -225,6 +245,8 @@ public class App
         kSession.insert(at5);
         kSession.insert(at6);
         kSession.insert(at7);
+        kSession.insert(at31);
+        kSession.insert(at21);
 
         kSession.insert(i1);
         kSession.insert(i2);
